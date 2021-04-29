@@ -120,6 +120,10 @@ const DEFAULT_CONFIG = {
     ],
 };
 
+const MAIN_TRACE: number = 0;
+const SELECTED_TRACE: number = 1;
+const BACKGROUND_TRACE: number = 2;
+const ALL_TRACES: number[] = [MAIN_TRACE, SELECTED_TRACE, BACKGROUND_TRACE];
 /**
  * The [[PropertiesMap]] class displays a 2D or 3D map (scatter plot) of
  * properties in the dataset, using [plotly.js](https://plot.ly/javascript/)
@@ -268,7 +272,7 @@ export class PropertiesMap {
         data.activate();
 
         if (this._is3D()) {
-            this._restyle({ 'marker.size': this._sizes(1) } as Data, 1);
+            this._restyle({ 'marker.size': this._sizes(SELECTED_TRACE) } as Data, SELECTED_TRACE);
         }
     }
 
@@ -355,7 +359,7 @@ export class PropertiesMap {
         // ======= x axis settings
         this._options.x.property.onchange = () => {
             const values = this._coordinates(this._options.x) as number[][];
-            this._restyle({ x: values }, [0, 1, 2]);
+            this._restyle({ x: values }, ALL_TRACES);
             this._relayout(({
                 'scene.xaxis.title': this._title(this._options.x.property.value),
                 'xaxis.title': this._title(this._options.x.property.value),
@@ -399,7 +403,7 @@ export class PropertiesMap {
         // ======= y axis settings
         this._options.y.property.onchange = () => {
             const values = this._coordinates(this._options.y) as number[][];
-            this._restyle({ y: values }, [0, 1, 2]);
+            this._restyle({ y: values }, ALL_TRACES);
             this._relayout(({
                 'scene.yaxis.title': this._title(this._options.y.property.value),
                 'yaxis.title': this._title(this._options.y.property.value),
@@ -434,7 +438,7 @@ export class PropertiesMap {
             }
 
             const values = this._coordinates(this._options.z);
-            this._restyle({ z: values } as Data, [0, 1, 2]);
+            this._restyle({ z: values } as Data, ALL_TRACES);
             this._relayout(({
                 'scene.zaxis.title': this._title(this._options.z.property.value),
             } as unknown) as Layout);
@@ -457,14 +461,19 @@ export class PropertiesMap {
             this._options.color.enable();
             this._colorReset.disabled = false;
 
-            const mainValues = this._colors(0)[0] as number[];
+            const mainValues = this._colors(MAIN_TRACE)[0] as number[];
             const mainExt = arrayMaxMin(mainValues);
 
-            const bgValues = this._colors(2)[0] as number[];
-            const bgExt = arrayMaxMin(bgValues);
+            const bgValues = this._colors(BACKGROUND_TRACE)[0] as number[];
 
-            this._options.color.min.value = Math.min(mainExt.min, bgExt.min);
-            this._options.color.max.value = Math.max(mainExt.max, bgExt.max);
+            if (bgValues.length > 0) {
+                const bgExt = arrayMaxMin(bgValues);
+                this._options.color.min.value = Math.min(mainExt.min, bgExt.min);
+                this._options.color.max.value = Math.max(mainExt.max, bgExt.max);
+            } else {
+                this._options.color.min.value = mainExt.min;
+                this._options.color.max.value = mainExt.max;
+            }
         } else {
             this._options.color.min.disable();
             this._colorReset.disabled = true;
@@ -478,15 +487,19 @@ export class PropertiesMap {
                 this._options.color.enable();
                 this._colorReset.disabled = false;
 
-                const mainValues = this._colors(0)[0] as number[];
+                const mainValues = this._colors(MAIN_TRACE)[0] as number[];
                 const mainExt = arrayMaxMin(mainValues);
 
-                const bgValues = this._colors(2)[0] as number[];
-                const bgExt = arrayMaxMin(bgValues);
+                const bgValues = this._colors(BACKGROUND_TRACE)[0] as number[];
 
-                this._options.color.min.value = Math.min(mainExt.min, bgExt.min);
-                this._options.color.max.value = Math.max(mainExt.max, bgExt.max);
-
+                if (bgValues.length > 0) {
+                    const bgExt = arrayMaxMin(bgValues);
+                    this._options.color.min.value = Math.min(mainExt.min, bgExt.min);
+                    this._options.color.max.value = Math.max(mainExt.max, bgExt.max);
+                } else {
+                    this._options.color.min.value = mainExt.min;
+                    this._options.color.max.value = mainExt.max;
+                }
                 this._relayout(({
                     'coloraxis.colorbar.title.text': this._title(
                         this._options.color.property.value
@@ -509,16 +522,16 @@ export class PropertiesMap {
             this._restyle(
                 {
                     hovertemplate: this._options.hovertemplate(),
-                    'marker.color': this._colors(0),
+                    'marker.color': this._colors(MAIN_TRACE),
                 } as Data,
-                0
+                MAIN_TRACE
             );
             this._restyle(
                 {
                     hovertemplate: this._options.hovertemplate(),
-                    'marker.color': this._colors(2),
+                    'marker.color': this._colors(BACKGROUND_TRACE),
                 } as Data,
-                2
+                BACKGROUND_TRACE
             );
         };
 
@@ -550,10 +563,10 @@ export class PropertiesMap {
         this._options.color.max.onchange = colorRangeChange;
 
         this._colorReset.onclick = () => {
-            const mainValues = this._colors(0)[0] as number[];
+            const mainValues = this._colors(MAIN_TRACE)[0] as number[];
             const mainExt = arrayMaxMin(mainValues);
 
-            const bgValues = this._colors(2)[0] as number[];
+            const bgValues = this._colors(BACKGROUND_TRACE)[0] as number[];
             const bgExt = arrayMaxMin(bgValues);
 
             const min = Math.min(mainExt.min, bgExt.min);
@@ -612,108 +625,108 @@ export class PropertiesMap {
             }
             this._restyle(
                 {
-                    'marker.color': this._colors(0),
-                    'marker.size': this._sizes(0),
-                    'marker.symbol': this._symbols(0),
-                    'marker.line.color': this._lineColors(0),
-                    x: this._coordinates(this._options.x, 0),
-                    y: this._coordinates(this._options.y, 0),
-                    z: this._coordinates(this._options.z, 0),
+                    'marker.color': this._colors(MAIN_TRACE),
+                    'marker.size': this._sizes(MAIN_TRACE),
+                    'marker.symbol': this._symbols(MAIN_TRACE),
+                    'marker.line.color': this._lineColors(MAIN_TRACE),
+                    x: this._coordinates(this._options.x, MAIN_TRACE),
+                    y: this._coordinates(this._options.y, MAIN_TRACE),
+                    z: this._coordinates(this._options.z, MAIN_TRACE),
                 } as Data,
                 0
             );
             this._restyle(
                 {
-                    'marker.color': this._colors(2),
-                    'marker.size': this._sizes(2),
-                    'marker.symbol': this._symbols(2),
-                    'marker.line.color': this._lineColors(2),
-                    x: this._coordinates(this._options.x, 2),
-                    y: this._coordinates(this._options.y, 2),
-                    z: this._coordinates(this._options.z, 2),
+                    'marker.color': this._colors(BACKGROUND_TRACE),
+                    'marker.size': this._sizes(BACKGROUND_TRACE),
+                    'marker.symbol': this._symbols(BACKGROUND_TRACE),
+                    'marker.line.color': this._lineColors(BACKGROUND_TRACE),
+                    x: this._coordinates(this._options.x, BACKGROUND_TRACE),
+                    y: this._coordinates(this._options.y, BACKGROUND_TRACE),
+                    z: this._coordinates(this._options.z, BACKGROUND_TRACE),
                 } as Data,
-                2
+                BACKGROUND_TRACE
             );
         };
 
         this._options.opacity.filter.property.onchange = () => {
             this._restyle(
                 {
-                    'marker.color': this._colors(0),
-                    'marker.size': this._sizes(0),
-                    'marker.symbol': this._symbols(0),
-                    'marker.line.color': this._lineColors(0),
-                    x: this._coordinates(this._options.x, 0),
-                    y: this._coordinates(this._options.y, 0),
-                    z: this._coordinates(this._options.z, 0),
+                    'marker.color': this._colors(MAIN_TRACE),
+                    'marker.size': this._sizes(MAIN_TRACE),
+                    'marker.symbol': this._symbols(MAIN_TRACE),
+                    'marker.line.color': this._lineColors(MAIN_TRACE),
+                    x: this._coordinates(this._options.x, MAIN_TRACE),
+                    y: this._coordinates(this._options.y, MAIN_TRACE),
+                    z: this._coordinates(this._options.z, MAIN_TRACE),
                 } as Data,
-                0
+                MAIN_TRACE
             );
             this._restyle(
                 {
-                    'marker.color': this._colors(2),
-                    'marker.size': this._sizes(2),
-                    'marker.symbol': this._symbols(2),
-                    'marker.line.color': this._lineColors(2),
-                    x: this._coordinates(this._options.x, 2),
-                    y: this._coordinates(this._options.y, 2),
-                    z: this._coordinates(this._options.z, 2),
+                    'marker.color': this._colors(BACKGROUND_TRACE),
+                    'marker.size': this._sizes(BACKGROUND_TRACE),
+                    'marker.symbol': this._symbols(BACKGROUND_TRACE),
+                    'marker.line.color': this._lineColors(BACKGROUND_TRACE),
+                    x: this._coordinates(this._options.x, BACKGROUND_TRACE),
+                    y: this._coordinates(this._options.y, BACKGROUND_TRACE),
+                    z: this._coordinates(this._options.z, BACKGROUND_TRACE),
                 } as Data,
-                2
+                BACKGROUND_TRACE
             );
         };
 
         this._options.opacity.filter.operator.onchange = () => {
             this._restyle(
                 {
-                    'marker.color': this._colors(0),
-                    'marker.size': this._sizes(0),
-                    'marker.symbol': this._symbols(0),
-                    'marker.line.color': this._lineColors(0),
-                    x: this._coordinates(this._options.x, 0),
-                    y: this._coordinates(this._options.y, 0),
-                    z: this._coordinates(this._options.z, 0),
+                    'marker.color': this._colors(MAIN_TRACE),
+                    'marker.size': this._sizes(MAIN_TRACE),
+                    'marker.symbol': this._symbols(MAIN_TRACE),
+                    'marker.line.color': this._lineColors(MAIN_TRACE),
+                    x: this._coordinates(this._options.x, MAIN_TRACE),
+                    y: this._coordinates(this._options.y, MAIN_TRACE),
+                    z: this._coordinates(this._options.z, MAIN_TRACE),
                 } as Data,
-                0
+                MAIN_TRACE
             );
             this._restyle(
                 {
-                    'marker.color': this._colors(2),
-                    'marker.size': this._sizes(2),
-                    'marker.symbol': this._symbols(2),
-                    'marker.line.color': this._lineColors(2),
-                    x: this._coordinates(this._options.x, 2),
-                    y: this._coordinates(this._options.y, 2),
-                    z: this._coordinates(this._options.z, 2),
+                    'marker.color': this._colors(BACKGROUND_TRACE),
+                    'marker.size': this._sizes(BACKGROUND_TRACE),
+                    'marker.symbol': this._symbols(BACKGROUND_TRACE),
+                    'marker.line.color': this._lineColors(BACKGROUND_TRACE),
+                    x: this._coordinates(this._options.x, BACKGROUND_TRACE),
+                    y: this._coordinates(this._options.y, BACKGROUND_TRACE),
+                    z: this._coordinates(this._options.z, BACKGROUND_TRACE),
                 } as Data,
-                2
+                BACKGROUND_TRACE
             );
         };
 
         this._options.opacity.filter.cutoff.onchange = () => {
             this._restyle(
                 {
-                    'marker.color': this._colors(0),
-                    'marker.size': this._sizes(0),
-                    'marker.symbol': this._symbols(0),
-                    'marker.line.color': this._lineColors(0),
-                    x: this._coordinates(this._options.x, 0),
-                    y: this._coordinates(this._options.y, 0),
-                    z: this._coordinates(this._options.z, 0),
+                    'marker.color': this._colors(MAIN_TRACE),
+                    'marker.size': this._sizes(MAIN_TRACE),
+                    'marker.symbol': this._symbols(MAIN_TRACE),
+                    'marker.line.color': this._lineColors(MAIN_TRACE),
+                    x: this._coordinates(this._options.x, MAIN_TRACE),
+                    y: this._coordinates(this._options.y, MAIN_TRACE),
+                    z: this._coordinates(this._options.z, MAIN_TRACE),
                 } as Data,
-                0
+                MAIN_TRACE
             );
             this._restyle(
                 {
-                    'marker.color': this._colors(2),
-                    'marker.size': this._sizes(2),
-                    'marker.symbol': this._symbols(2),
-                    'marker.line.color': this._lineColors(2),
-                    x: this._coordinates(this._options.x, 2),
-                    y: this._coordinates(this._options.y, 2),
-                    z: this._coordinates(this._options.z, 2),
+                    'marker.color': this._colors(BACKGROUND_TRACE),
+                    'marker.size': this._sizes(BACKGROUND_TRACE),
+                    'marker.symbol': this._symbols(BACKGROUND_TRACE),
+                    'marker.line.color': this._lineColors(BACKGROUND_TRACE),
+                    x: this._coordinates(this._options.x, BACKGROUND_TRACE),
+                    y: this._coordinates(this._options.y, BACKGROUND_TRACE),
+                    z: this._coordinates(this._options.z, BACKGROUND_TRACE),
                 } as Data,
-                2
+                BACKGROUND_TRACE
             );
         };
 
@@ -722,7 +735,7 @@ export class PropertiesMap {
                 {
                     'marker.opacity': this._options.opacity.minimum.value,
                 } as Data,
-                2
+                BACKGROUND_TRACE
             );
         };
         this._options.opacity.maximum.onchange = () => {
@@ -730,22 +743,22 @@ export class PropertiesMap {
                 {
                     'marker.opacity': this._options.opacity.maximum.value,
                 } as Data,
-                0
+                MAIN_TRACE
             );
         };
 
         this._options.opacity.enableColors.onchange = () => {
             this._restyle(
                 {
-                    'marker.color': this._colors(2),
+                    'marker.color': this._colors(BACKGROUND_TRACE),
                 } as Data,
-                2
+                BACKGROUND_TRACE
             );
         };
 
         // ======= markers symbols
         this._options.symbol.onchange = () => {
-            this._restyle({ 'marker.symbol': this._symbols() }, [0, 1, 2]);
+            this._restyle({ 'marker.symbol': this._symbols() }, ALL_TRACES);
 
             this._restyle(({
                 name: this._legendNames(),
@@ -766,23 +779,35 @@ export class PropertiesMap {
                 this._options.size.property.disable();
                 this._options.size.reverse.disable();
             }
-            this._restyle({ 'marker.size': this._sizes(0) } as Data, 0);
-            this._restyle({ 'marker.size': this._sizes(2) } as Data, 2);
+            this._restyle({ 'marker.size': this._sizes(MAIN_TRACE) } as Data, MAIN_TRACE);
+            this._restyle(
+                { 'marker.size': this._sizes(BACKGROUND_TRACE) } as Data,
+                BACKGROUND_TRACE
+            );
         };
 
         this._options.size.factor.onchange = () => {
-            this._restyle({ 'marker.size': this._sizes(0) } as Data, 0);
-            this._restyle({ 'marker.size': this._sizes(2) } as Data, 2);
+            this._restyle({ 'marker.size': this._sizes(MAIN_TRACE) } as Data, MAIN_TRACE);
+            this._restyle(
+                { 'marker.size': this._sizes(BACKGROUND_TRACE) } as Data,
+                BACKGROUND_TRACE
+            );
         };
 
         this._options.size.property.onchange = () => {
-            this._restyle({ 'marker.size': this._sizes(0) } as Data, 0);
-            this._restyle({ 'marker.size': this._sizes(2) } as Data, 2);
+            this._restyle({ 'marker.size': this._sizes(MAIN_TRACE) } as Data, MAIN_TRACE);
+            this._restyle(
+                { 'marker.size': this._sizes(BACKGROUND_TRACE) } as Data,
+                BACKGROUND_TRACE
+            );
         };
 
         this._options.size.reverse.onchange = () => {
-            this._restyle({ 'marker.size': this._sizes(0) } as Data, 0);
-            this._restyle({ 'marker.size': this._sizes(2) } as Data, 2);
+            this._restyle({ 'marker.size': this._sizes(MAIN_TRACE) } as Data, MAIN_TRACE);
+            this._restyle(
+                { 'marker.size': this._sizes(BACKGROUND_TRACE) } as Data,
+                BACKGROUND_TRACE
+            );
         };
     }
 
@@ -796,24 +821,24 @@ export class PropertiesMap {
             name: '',
             type: type,
 
-            x: this._coordinates(this._options.x, 0)[0],
-            y: this._coordinates(this._options.y, 0)[0],
-            z: this._coordinates(this._options.z, 0)[0],
+            x: this._coordinates(this._options.x, MAIN_TRACE)[0],
+            y: this._coordinates(this._options.y, MAIN_TRACE)[0],
+            z: this._coordinates(this._options.z, MAIN_TRACE)[0],
 
             hovertemplate: this._options.hovertemplate(),
             marker: {
-                color: this._colors(0)[0],
+                color: this._colors(MAIN_TRACE)[0],
                 coloraxis: 'coloraxis',
                 line: {
-                    color: this._lineColors(0)[0],
+                    color: this._lineColors(MAIN_TRACE)[0],
                     width: 1,
                 },
                 // prevent plolty from messing with opacity when doing bubble
                 // style charts (different sizes for each point)
                 opacity: 1,
-                size: this._sizes(0)[0],
+                size: this._sizes(MAIN_TRACE)[0],
                 sizemode: 'area',
-                symbol: this._symbols(0)[0],
+                symbol: this._symbols(MAIN_TRACE)[0],
             },
             mode: 'markers',
             showlegend: false,
@@ -846,7 +871,7 @@ export class PropertiesMap {
             showlegend: false,
         };
 
-        // The main trace, containing default data
+        // The backgraound trace, containing transparent data
         const main2 = {
             name: '',
             type: type,
@@ -1196,11 +1221,11 @@ export class PropertiesMap {
                 background = main;
             }
         }
-        if (trace === 0) {
+        if (trace === MAIN_TRACE) {
             return [main];
-        } else if (trace === 1) {
+        } else if (trace === SELECTED_TRACE) {
             return [selected];
-        } else if (trace === 2) {
+        } else if (trace === BACKGROUND_TRACE) {
             return [background];
         } else if (trace === undefined) {
             return [main, selected, background];
@@ -1265,7 +1290,7 @@ export class PropertiesMap {
                 'marker.size': this._sizes(),
                 'marker.sizemode': 'area',
             } as Data,
-            [0, 1, 2]
+            ALL_TRACES
         );
 
         if (
@@ -1277,7 +1302,7 @@ export class PropertiesMap {
         this._options.opacity.minimum.disable();
         this._options.opacity.maximum.disable();
         this._options.opacity.enableColors.disable();
-        this._restyle({ opacity: 0 } as Data, [2]);
+        this._restyle({ opacity: 0 } as Data, [BACKGROUND_TRACE]);
 
         this._relayout(({
             // change colorbar length to accomodate for symbols legend
@@ -1321,11 +1346,11 @@ export class PropertiesMap {
         this._options.opacity.enableColors.enable();
         this._restyle(
             { opacity: 1, 'marker.opacity': this._options.opacity.maximum.value } as Data,
-            [0]
+            [MAIN_TRACE]
         );
         this._restyle(
             { opacity: 1, 'marker.opacity': this._options.opacity.minimum.value } as Data,
-            [2]
+            [BACKGROUND_TRACE]
         );
 
         this._restyle(
@@ -1337,7 +1362,7 @@ export class PropertiesMap {
                 // size change from 2D to 3D
                 'marker.size': this._sizes(),
             } as Data,
-            [0, 1, 2]
+            ALL_TRACES
         );
 
         this._relayout(({
@@ -1384,18 +1409,18 @@ export class PropertiesMap {
             data.forEach((d) => d.toggleVisible(false));
             this._restyle(
                 {
-                    'marker.color': this._colors(1),
-                    'marker.size': this._sizes(1),
-                    'marker.symbol': this._symbols(1),
-                    x: this._coordinates(this._options.x, 1),
-                    y: this._coordinates(this._options.y, 1),
-                    z: this._coordinates(this._options.z, 1),
+                    'marker.color': this._colors(SELECTED_TRACE),
+                    'marker.size': this._sizes(SELECTED_TRACE),
+                    'marker.symbol': this._symbols(SELECTED_TRACE),
+                    x: this._coordinates(this._options.x, SELECTED_TRACE),
+                    y: this._coordinates(this._options.y, SELECTED_TRACE),
+                    z: this._coordinates(this._options.z, SELECTED_TRACE),
                 } as Data,
-                1
+                SELECTED_TRACE
             );
         } else {
-            const allX = this._coordinates(this._options.x, 0) as number[][];
-            const allY = this._coordinates(this._options.y, 0) as number[][];
+            const allX = this._coordinates(this._options.x, MAIN_TRACE) as number[][];
+            const allY = this._coordinates(this._options.y, MAIN_TRACE) as number[][];
             const plotWidth = this._plot.getBoundingClientRect().width;
 
             for (const datum of data) {
