@@ -557,7 +557,9 @@ export class ViewersGrid {
                 </button>`;
             const remove = template.content.firstChild as HTMLElement;
             remove.onclick = () => {
+                console.log('clicked on remove viewer');
                 if (this._viewers.size === 1) {
+                    console.log('got into if statement');
                     sendWarning('can not remove the last viewer from the grid');
                     return;
                 }
