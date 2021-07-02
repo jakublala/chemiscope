@@ -210,13 +210,13 @@ export class PropertiesMap {
      * Create a new [[PropertiesMap]] inside the DOM element with the given HTML
      * `id`
      *
-     * @param element   HTML element or HTML id of the DOM element where the name should live
+     * @param id         HTML id of the DOM element where the map should live
      * @param indexer    [[EnvironmentIndexer]] used to translate indexes from
      *                   environments index to structure/atom indexes
      * @param properties properties to be displayed
      */
     constructor(
-        config: { element: string | HTMLElement; settings: SavedSettings },
+        config: { id: string; settings: SavedSettings },
         indexer: EnvironmentIndexer,
         properties: { [name: string]: Property }
     ) {
@@ -225,12 +225,7 @@ export class PropertiesMap {
         this.activeChanged = () => {};
         this._selected = new Map<GUID, MarkerData>();
 
-        if (typeof config.element !== 'string') {
-            this._root = config.element;
-        } else {
-            this._root = getByID(config.element);
-        }
-
+        this._root = getByID(config.id);
         if (this._root.style.position === '') {
             this._root.style.position = 'relative';
         }

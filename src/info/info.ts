@@ -12,6 +12,8 @@ import { generateGUID, getByID } from '../utils';
 import { Slider } from './slider';
 import { Table } from './table';
 
+import INFO_SVG from '../static/info.svg';
+
 function filter<T extends Record<string, Property>>(
     obj: T,
     predicate: (o: Property) => boolean
@@ -63,24 +65,15 @@ export class EnvironmentInfo {
 
     /**
      * Create a new [[EnvironmentInfo]] inside the DOM element with given `id`
-     * @param element    HTML id of the DOM element where the sliders and
+     * @param id         HTML id of the DOM element where the sliders and
      *                   tables should live
      * @param properties properties to be displayed
      * @param indexer    [[EnvironmentIndexer]] used to translate indexes from
      *                   environments index to structure/atom indexes
      * @param viewer     [[ViewersGrid]] from which we get the playback delay
      */
-    constructor(
-        element: string | HTMLElement,
-        properties: { [name: string]: Property },
-        indexer: EnvironmentIndexer
-    ) {
-        if (typeof element !== 'string') {
-            this._root = element;
-        } else {
-            this._root = getByID(element);
-        }
-
+    constructor(id: string, properties: { [name: string]: Property }, indexer: EnvironmentIndexer) {
+        this._root = getByID(id);
         this._indexer = indexer;
         this.onchange = () => {};
         this.startStructurePlayback = () => {};
@@ -98,6 +91,7 @@ export class EnvironmentInfo {
                 aria-expanded='false'
                 aria-controls='${atomId}'>
                     atom <input class='chsp-info-number' type=number value=1 min=1></input>
+                    <div class="chsp-info-btns-svg">${INFO_SVG}</div>
             </div>
             `;
         }
@@ -111,6 +105,7 @@ export class EnvironmentInfo {
                 aria-expanded='false'
                 aria-controls='${structureId}'>
                     structure <input class='chsp-info-number' type=number value=1 min=1></input>
+                    <div class="chsp-info-btns-svg">${INFO_SVG}</div>
             </div>
             ${atomButton}
         </div>`;

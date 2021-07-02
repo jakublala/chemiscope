@@ -52,13 +52,8 @@ export function generateGUID(): GUID {
 }
 
 /** Get an HTML element by id */
-export function getByID<HTMLType = HTMLElement>(id: string, root?: HTMLElement): HTMLType {
-    let e;
-    if (root !== undefined) {
-        e = root.querySelector(`#${id}`);
-    } else {
-        e = document.getElementById(id);
-    }
+export function getByID<HTMLType = HTMLElement>(id: string): HTMLType {
+    const e = document.getElementById(id);
     if (e === null) {
         throw Error(`unable to get element with id ${id}`);
     }
