@@ -3,21 +3,6 @@
     cursor: pointer;
 }
 
-#chemiscope-meta:hover {
-    border-color: #22313f;
-    background-color: #5b84aa;
-}
-
-#chsp-meta-info-icon {
-    float: right;
-    margin-top: 5px;
-    margin-left: 8px;
-}
-
-#chsp-meta-info-icon svg {
-    display: block;
-}
-
 .chsp-authors-list {
     padding: 0;
     display: flex;
@@ -234,15 +219,13 @@
 }
 
 .chsp-info-structure-btn {
+    margin-right: 1em;
     min-width: 8em;
-    padding-left: 6px;
-    padding-right: 4px;
     font-weight: bold;
     font-size: small;
     background-color: none;
     border-color: #66a5e8;
     border-width: 2px;
-    float: left;
 }
 
 .chsp-info-structure-btn:hover {
@@ -250,9 +233,6 @@
 }
 
 .chsp-info-atom-btn {
-    margin-left: 1em;
-    padding-left: 6px;
-    padding-right: 4px;
     min-width: 8em;
     font-weight: bold;
     font-size: small;
@@ -265,22 +245,13 @@
     background-color: #44a344;
 }
 
-.chsp-info-btns-svg {
-    float: right;
-    padding-left: 1px;
-}
-
-.chsp-info-btns-svg svg {
-    display: block;
-}
-
 .chsp-info-number {
     -moz-appearance: textfield;
     border: none;
     transition: background-color 0.15s;
     background-color: #ebedf0;
-    margin-left: 2px;
-    margin-right: 3px;
+    padding-left: 2px;
+    padding-right: 2px;
     font-family: inherit;
     width: 4em;
 }

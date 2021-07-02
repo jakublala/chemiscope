@@ -37,13 +37,13 @@ require('./static/chemiscope.css');
  */
 export interface Config {
     /** Id of the DOM element to use for the [[MetadataPanel|metadata display]] */
-    meta: string;
+    meta: string | HTMLElement;
     /** Id of the DOM element to use for the [[PropertiesMap|properties map]] */
-    map: string;
+    map: string | HTMLElement;
     /** Id of the DOM element to use for the [[EnvironmentInfo|environment information]] */
-    info: string;
+    info: string | HTMLElement;
     /** Id of the DOM element to use for the [[ViewersGrid|structure viewer]] */
-    structure: string;
+    structure: string | HTMLElement;
     /** Settings for the map & structure viewer */
     settings?: Partial<Settings>;
     /** Custom structure loading callback, used to set [[ViewersGrid.loadStructure]] */
@@ -60,24 +60,20 @@ export interface Settings {
  * Check if `o` contains all the expected fields to be a [[Config]].
  */
 function validateConfig(o: JsObject) {
-    if (typeof o !== 'object') {
-        throw Error('the configuration must be a JavaScript object');
+    if (!('meta' in o && (typeof o.meta === 'string' || isHTMLElement(o.meta)))) {
+        throw Error('missing "meta" key in chemiscope config');
     }
 
-    if (!('meta' in o && typeof o.meta === 'string')) {
-        throw Error('missing "meta" key in chemiscope configuration');
+    if (!('map' in o && (typeof o.map === 'string' || isHTMLElement(o.map)))) {
+        throw Error('missing "map" key in chemiscope config');
     }
 
-    if (!('map' in o && typeof o.map === 'string')) {
-        throw Error('missing "map" key in chemiscope configuration');
+    if (!('info' in o && (typeof o.info === 'string' || isHTMLElement(o.info)))) {
+        throw Error('missing "info" key in chemiscope config');
     }
 
-    if (!('info' in o && typeof o.info === 'string')) {
-        throw Error('missing "info" key in chemiscope configuration');
-    }
-
-    if (!('structure' in o && typeof o.structure === 'string')) {
-        throw Error('missing "structure" key in chemiscope configuration');
+    if (!('structure' in o && (typeof o.structure === 'string' || isHTMLElement(o.structure)))) {
+        throw Error('missing "structure" key in chemiscope config');
     }
 
     if ('settings' in o) {
@@ -220,7 +216,7 @@ class DefaultVisualizer {
 
         // map setup
         this.map = new PropertiesMap(
-            { id: config.map, settings: getMapSettings(config.settings) },
+            { element: config.map, settings: getMapSettings(config.settings) },
             this._indexer,
             dataset.properties
         );

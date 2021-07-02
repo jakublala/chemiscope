@@ -332,6 +332,8 @@ export class MapOptions extends OptionsGroup {
             }
         });
 
+        //this.lockModalInputs();
+
         return { openSettings, modal };
     }
 
@@ -420,4 +422,9 @@ export class MapOptions extends OptionsGroup {
     public colorScale(): Plotly.ColorScale {
         return COLOR_MAPS[this.palette.value];
     }
+
+    // private lockModalInputs(): void {
+    //     const inputFields = getByID<HTMLInputElement>('chsp-x-max');
+    //     inputFields.onkeydown = onlyUpDownKeys;
+    // }
 }

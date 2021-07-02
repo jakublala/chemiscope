@@ -144,7 +144,7 @@ export class ViewersGrid {
      * Create a new [[ViewersGrid]] inside the HTML element with the given
      * `id`
      *
-     * @param id           HTML id of the DOM element where the viewer should live
+     * @param element      HTML element or HTML id of the DOM element where the name should live
      * @param indexer      [[EnvironmentIndexer]] used to translate indexes from
      *                     environments index to structure/atom indexes
      * @param structures   list of structure to display
@@ -152,7 +152,7 @@ export class ViewersGrid {
      *                     used to highlight the selected environment
      */
     constructor(
-        id: string,
+        element: string | HTMLElement,
         indexer: EnvironmentIndexer,
         structures: Structure[] | UserStructure[],
         environments?: Environment[]
@@ -181,7 +181,12 @@ export class ViewersGrid {
         this.oncreate = () => {};
         this.activeChanged = () => {};
 
-        const root = getByID(id);
+        let root;
+        if (typeof element !== 'string') {
+            root = element;
+        } else {
+            root = getByID(element);
+        }
         this._root = document.createElement('div');
         this._root.id = 'grid-root';
         this._root.className = 'chsp-structure-viewer-grid';
@@ -272,7 +277,8 @@ export class ViewersGrid {
         data.widget.remove();
 
         // remove the cell containing the widget
-        const cell = getByID(`gi-${guid}`);
+        // const cell = getByID(`gi-${guid}`, this._root);
+        const cell = this._root.querySelector(`#${guid}`) as HTMLElement;
         cell.remove();
 
         this._viewers.delete(guid);
@@ -342,7 +348,7 @@ export class ViewersGrid {
         const changeClasses = (toggle: boolean) => {
             assert(this._viewers.has(this._active));
             // change tooltip text in the active marker
-            const button = getByID(`chsp-activate-${this._active}`);
+            const button = getByID(`chsp-activate-${this._active}`, this._root);
             button.classList.toggle('chsp-active-structure', toggle);
             assert(button.parentElement !== null);
             const tooltip = button.parentElement.querySelector('.chsp-tooltip');
@@ -350,7 +356,8 @@ export class ViewersGrid {
             tooltip.innerHTML = toggle ? 'this is the active viewer' : 'choose as active';
 
             // change style of the cell border
-            const cell = getByID(`gi-${this._active}`);
+            const cell = getByID(`gi-${this._active}`, this._root);
+            // const cell = this._root.querySelector(`#${this._active}`) as HTMLElement;
             cell.classList.toggle('chsp-structure-viewer-cell-active', toggle);
         };
 
@@ -513,7 +520,7 @@ export class ViewersGrid {
      */
     private _setupCell(cellGUID: GUID, colNum: number, rowNum: number): string {
         const cellId = `gi-${cellGUID}`;
-        let cell = document.getElementById(cellId);
+        let cell = this._root.querySelector(`#${cellId}`) as HTMLElement;
         let color = '';
 
         if (cell === null) {
@@ -650,7 +657,10 @@ export class ViewersGrid {
 
             // add a new widget if necessary
             if (!this._viewers.has(cellGUID)) {
-                const widget = new MoleculeViewer(`gi-${cellGUID}`, cellGUID);
+                const widget = new MoleculeViewer(
+                    this._root.querySelector(`#gi-${cellGUID}`) as HTMLElement,
+                    cellGUID
+                );
 
                 widget.onselect = (atom: number) => {
                     if (this._indexer.mode !== 'atom' || this._active !== cellGUID) {
