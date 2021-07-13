@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .input import create_input, write_input  # noqa
+from .widget import display
 
 
 # Get the version from setuptools metadata (which took it from package.json)
