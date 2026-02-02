@@ -10,9 +10,9 @@ authors:
     - name: Sofiia Chorna
       orcid: XXXXX
       affiliation: 1
-    - name: Jakub Lala
-      orcid: YYYYY
-      affiliation: ?
+    - name: Jakub Lála
+      orcid: 0000-0002-5424-5260
+      affiliation: 1
     - name: Qianjun Xu ?
       orcid: ?
       affiliation: 1
